@@ -1,5 +1,5 @@
 import concurrent.futures
-import pandas as pd
+import sys
 import argparse
 import requests
 from requests.adapters import HTTPAdapter
@@ -7,18 +7,12 @@ from urllib3.util.retry import Retry
 from pathlib import Path
 
 
-def gh_url_to_raw(url):
-    # Marcus Fedarko (fedarko), gh_url_to_raw_gh_url.py, https://gist.github.com/fedarko/4fc177cff9084b9e325dcbe954547edc
-    return url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
-
-
 def gh_url_to_filepath(url):
-    return url.replace("https://github.com/", "")
+    return url.replace("https://raw.githubusercontent.com/", "")
 
 
 def fetch_url(http, url):
-    raw_url = gh_url_to_raw(url)
-    return http.get(raw_url).text
+    return http.get(url).text
 
 
 def save_fetch_result(output_path, url, data):
@@ -44,8 +38,8 @@ def create_http_session():
 def main():
     # Arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", dest="input", help="CSV input file", required=True)
-    parser.add_argument("-o", dest="output", help="Results output directory (default: 'out')", default="out")
+    parser.add_argument(
+        "-o", dest="output", help="Results output directory (default: 'out')", default="out")
     parser.add_argument(
         "-t", dest="threads", help="Number of download threads (default: 100)", default=100, type=int)
     args = parser.parse_args()
@@ -54,10 +48,9 @@ def main():
     # Process CSV file
     # Based on https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor-example
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-        chunks = pd.read_csv(args.input, usecols=[
-                             "File external URL"], low_memory=True)
+        urls = (l.rstrip("\n") for l in sys.stdin)
         future_to_url = {executor.submit(
-            fetch_url, http, url): url for url in chunks["File external URL"]}
+            fetch_url, http, url): url for url in urls}
         for future in concurrent.futures.as_completed(future_to_url):
             url = future_to_url[future]
             try:
@@ -66,6 +59,7 @@ def main():
                 print("Fetching %r generated an exception: %s" % (url, e))
                 continue
             try:
+                print(url)
                 save_fetch_result(args.output, url, data)
             except Exception as e:
                 print("Writing %r generated an exception: %s" % (url, e))
