@@ -45,7 +45,6 @@ def main():
     args = parser.parse_args()
     # Create requests session
     http = create_http_session()
-    # Process CSV file
     # Based on https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor-example
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
         urls = (l.rstrip("\n") for l in sys.stdin)
