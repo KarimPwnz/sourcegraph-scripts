@@ -43,7 +43,9 @@ class GitHubDownloader:
 async def main():
     setup_logging()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-o", "--output", help="Output file path", default="out")
+    parser.add_argument(
+        "-o", "--output", help="Output file path (default: 'out')", default="out"
+    )
     parser.add_argument(
         "-l",
         dest="limit",
