@@ -8,7 +8,7 @@ $ src search -stream -json '${{github.event.comment.body}} file:.github/workflow
 
 ## Why is this so useful?
 
-This allows security researchers to run static analysis tools on a mass of GitHub repos which are fetched from Sourcegraph. Here's an example of running semgrep:
+This allows security researchers to run static analysis tools on a mass of GitHub repos which are fetched from Sourcegraph. Here's an example of running [Semgrep](https://semgrep.dev):
 
 ```sh
 $ semgrep --config "p/github-actions" out
