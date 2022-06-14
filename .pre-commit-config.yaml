@@ -1,0 +1,30 @@
+repos:
+-   repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+    - id: black
+
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: master
+    hooks:
+    -   id: mypy
+        args: [--no-strict-optional, --ignore-missing-imports]
+
+-   repo: https://github.com/asottile/blacken-docs
+    rev: master
+    hooks:
+    -   id: blacken-docs
+        additional_dependencies: [black]
+        args: ["--skip-errors"]
+
+-   repo: https://github.com/timothycrosley/isort
+    rev: master
+    hooks:
+    -   id: isort
+        additional_dependencies: [toml]
+
+-   repo: git@github.com:humitos/mirrors-autoflake.git
+    rev: master
+    hooks:
+    -   id: autoflake
+        args: ["--in-place", "--remove-all-unused-imports", "--remove-unused-variable"]
