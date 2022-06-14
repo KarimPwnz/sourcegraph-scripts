@@ -3,7 +3,7 @@ Scripts for the purposes of scraping Sourcegraph search results. Script `json-to
 ## Example Usage
 
 ```sh
-src search -stream -json '${{github.event.comment.body}} file:.github/workflows COUNT:100000' | ./json-to-raw-url.sh | python3 src/github_downloader.py
+$ src search -stream -json '${{github.event.comment.body}} file:.github/workflows COUNT:100000' | ./json-to-raw-url.sh | python3 src/github_downloader.py
 ```
 
 ## Why is this so useful?
@@ -11,8 +11,16 @@ src search -stream -json '${{github.event.comment.body}} file:.github/workflows 
 This allows security researchers to run static analysis tools on a mass of GitHub repos which are fetched from Sourcegraph. Here's an example of running semgrep:
 
 ```sh
-semgrep --config "p/github-actions" out
+$ semgrep --config "p/github-actions" out
 ```
 
 The output will include full repository file paths, allowing us to easily identify the vulnerable repositories.
+
+## How to install
+
+```sh
+$ git clone https://github.com/KarimPwnz/sourcegraph-scripts.git
+$ cd sourcegraph-scripts
+$ pip install -r requirements.txt
+```
 
