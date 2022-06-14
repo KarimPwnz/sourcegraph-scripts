@@ -1,9 +1,11 @@
-from utils import create_client, setup_logging
-from aiopath import AsyncPath
-import asyncio
-import sys
-import logging
 import argparse
+import asyncio
+import logging
+import sys
+
+from aiopath import AsyncPath
+
+from utils import create_client, setup_logging
 
 
 class GitHubDownloader:
@@ -29,8 +31,7 @@ class GitHubDownloader:
         try:
             content = await self.download(url)
         except Exception as e:
-            logging.exception(
-                "Exception occurred while downloading: %s", str(e))
+            logging.exception("Exception occurred while downloading: %s", str(e))
             return
         logging.info("Saving %s", url)
         try:
@@ -42,10 +43,14 @@ class GitHubDownloader:
 async def main():
     setup_logging()
     parser = argparse.ArgumentParser()
+    parser.add_argument("-o", "--output", help="Output file path", default="out")
     parser.add_argument(
-        "-o", "--output", help="Output file path", default="out")
-    parser.add_argument(
-        "-l", dest="limit", help="Concurrent requests limit (default: 100)", default=100, type=int)
+        "-l",
+        dest="limit",
+        help="Concurrent requests limit (default: 100)",
+        default=100,
+        type=int,
+    )
     args = parser.parse_args()
     async with create_client(request_limit=args.limit) as client:
         downloader = GitHubDownloader(client=client, output_path=args.output)
@@ -54,6 +59,7 @@ async def main():
         for url in urls:
             tasks.append(downloader.download_and_save(url))
         await asyncio.gather(*tasks)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,7 +1,8 @@
-import sys
 import argparse
 import asyncio
 import logging
+import sys
+
 from utils import create_client, setup_logging
 
 
@@ -17,12 +18,15 @@ class PopularityChecker:
         return url.split("/")[3]
 
     async def get_repos(self, username):
-        async with self._client.get(f"https://api.github.com/users/{username}/repos?type=owner") as resp:
+        async with self._client.get(
+            f"https://api.github.com/users/{username}/repos?type=owner"
+        ) as resp:
             repos = await resp.json()
             try:
                 message = repos.get("message")
                 logging.error(
-                    "Got error while getting repos of %s: %s", username, message)
+                    "Got error while getting repos of %s: %s", username, message
+                )
                 return []
             except AttributeError:
                 return repos
@@ -54,13 +58,26 @@ async def main():
     setup_logging()
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-s", dest="stars", help="Number of minimum stars (default: 100)", default=100, type=int)
+        "-s",
+        dest="stars",
+        help="Number of minimum stars (default: 100)",
+        default=100,
+        type=int,
+    )
     parser.add_argument(
-        "-l", dest="limit", help="Concurrent requests limit (default: 20)", default=20, type=int)
+        "-l",
+        dest="limit",
+        help="Concurrent requests limit (default: 20)",
+        default=20,
+        type=int,
+    )
     parser.add_argument(
-        "-token", dest="token", help="Github token", required=True, type=str)
+        "-token", dest="token", help="Github token", required=True, type=str
+    )
     args = parser.parse_args()
-    async with create_client(request_limit=args.limit, headers={"Authorization": f"Token {args.token}"}) as client:
+    async with create_client(
+        request_limit=args.limit, headers={"Authorization": f"Token {args.token}"}
+    ) as client:
         checker = PopularityChecker(client=client, min_stars=args.stars)
         urls = (l.rstrip("\n") for l in sys.stdin)
         tasks = []
