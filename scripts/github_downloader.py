@@ -4,7 +4,6 @@ import logging
 import sys
 
 from aiopath import AsyncPath
-
 from utils import create_client, setup_logging
 
 

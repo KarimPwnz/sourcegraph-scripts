@@ -1,9 +1,9 @@
-Scripts for the purposes of scraping Sourcegraph search results. Script `src/json-to-raw-url.sh` extracts raw GitHub file URLs from [src-cli](https://github.com/sourcegraph/src-cli/), and `src/github_downloader.py` downloads all the files from GitHub.
+Scripts for the purposes of scraping Sourcegraph search results. Script `scripts/json-to-raw-url.sh` extracts raw GitHub file URLs from [src-cli](https://github.com/sourcegraph/src-cli/), and `scripts/github_downloader.py` downloads all the files from GitHub.
 
 ## Example Usage
 
 ```sh
-$ src search -stream -json '${{github.event.comment.body}} file:.github/workflows COUNT:100000' | ./src/json-to-raw-url.sh | python3 src/github_downloader.py
+$ src search -stream -json '${{github.event.comment.body}} file:.github/workflows COUNT:100000' | ./scripts/json-to-raw-url.sh | python3 scripts/github_downloader.py
 ```
 
 ## Why is this so useful?
