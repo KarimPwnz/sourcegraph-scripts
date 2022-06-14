@@ -1,4 +1,4 @@
-A tool for the purposes of scraping Sourcegraph search results. Script `json-to-raw-url.sh` extracts raw GitHub file URLs from src-cli (https://github.com/sourcegraph/src-cli/), and `src/sourcegraph_fetcher.py` downloads all the fetched files.
+A tool for the purposes of scraping Sourcegraph search results. Script `json-to-raw-url.sh` extracts raw GitHub file URLs from [src-cli](https://github.com/sourcegraph/src-cli/), and `src/sourcegraph_fetcher.py` downloads all the fetched files.
 
 ## Example Usage
 
