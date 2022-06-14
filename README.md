@@ -1,4 +1,4 @@
-Scripts for the purposes of scraping Sourcegraph search results. Script `json-to-raw-url.sh` extracts raw GitHub file URLs from [src-cli](https://github.com/sourcegraph/src-cli/), and `src/github_downloader.py` downloads all the fetched files.
+Scripts for the purposes of scraping Sourcegraph search results. Script `json-to-raw-url.sh` extracts raw GitHub file URLs from [src-cli](https://github.com/sourcegraph/src-cli/), and `src/github_downloader.py` downloads all the files from GitHub.
 
 ## Example Usage
 
