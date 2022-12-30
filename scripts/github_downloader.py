@@ -55,10 +55,15 @@ async def main():
     args = parser.parse_args()
     async with create_client(request_limit=args.limit) as client:
         downloader = GitHubDownloader(client=client, output_path=args.output)
+        i = 0
         tasks = []
         urls = (l.rstrip("\n") for l in sys.stdin)
         for url in urls:
+            i += 1
             tasks.append(downloader.download_and_save(url))
+            if i % args.limit == 0:
+                await asyncio.gather(*tasks)
+                tasks = []
         await asyncio.gather(*tasks)
 
 
