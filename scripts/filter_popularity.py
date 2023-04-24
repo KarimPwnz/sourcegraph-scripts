@@ -3,6 +3,7 @@ import asyncio
 import logging
 import sys
 
+
 from utils import create_client, setup_logging
 
 
@@ -31,10 +32,7 @@ class PopularityChecker:
             except AttributeError:
                 return repos
 
-    async def is_popular(self, url):
-        username = self._gh_url_to_username(url)
-        if username in self._usernames:
-            return self._usernames[username]
+    async def check_popularity(self, username):
         logging.info("Getting repos of %s", username)
         try:
             repos = await self.get_repos(username)
@@ -48,10 +46,20 @@ class PopularityChecker:
         self._usernames[username] = False
         return False
 
-    async def print_if_popular(self, url):
-        logging.info("Checking %s", url)
-        if await self.is_popular(url):
-            print(url, flush=True)
+
+    async def is_popular(self, query):
+        if query.startswith("https://raw.githubusercontent.com/"):
+            username = self._gh_url_to_username(query)
+        else:
+            username = query
+        if username not in self._usernames:
+            self._usernames[username] = asyncio.ensure_future(self.check_popularity(username))
+        return await self._usernames[username]
+
+    async def print_if_popular(self, query):
+        logging.info("Checking %s", query)
+        if await self.is_popular(query):
+            print(query, flush=True)
 
 
 async def main():
@@ -69,20 +77,23 @@ async def main():
         dest="limit",
         help="Concurrent requests limit (default: 20)",
         default=20,
-        type=int,
+        type=int
     )
     parser.add_argument(
-        "-token", dest="token", help="Github token", required=True, type=str
+        "-token", dest="token", help="Github token", required=False, type=str
     )
     args = parser.parse_args()
+    headers = {}
+    if args.token:
+        headers["Authorization"] = f"Token {args.token}"
     async with create_client(
-        request_limit=args.limit, headers={"Authorization": f"Token {args.token}"}
+        request_limit=args.limit, headers=headers
     ) as client:
         checker = PopularityChecker(client=client, min_stars=args.stars)
-        urls = (l.rstrip("\n") for l in sys.stdin)
+        queries = (l.rstrip("\n") for l in sys.stdin)
         tasks = []
-        for url in urls:
-            tasks.append(checker.print_if_popular(url))
+        for query in queries:
+            tasks.append(checker.print_if_popular(query))
         await asyncio.gather(*tasks)
 
 
