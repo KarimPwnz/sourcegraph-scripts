@@ -1,10 +1,8 @@
+import aiohttp
 import argparse
 import asyncio
 import logging
 import sys
-
-
-from utils import create_client, setup_logging
 
 
 class PopularityChecker:
@@ -63,7 +61,7 @@ class PopularityChecker:
 
 
 async def main():
-    setup_logging()
+    logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-s",
@@ -86,9 +84,8 @@ async def main():
     headers = {}
     if args.token:
         headers["Authorization"] = f"Token {args.token}"
-    async with create_client(
-        request_limit=args.limit, headers=headers
-    ) as client:
+    conn = aiohttp.TCPConnector(limit=args.limit)
+    async with aiohttp.ClientSession(connector=conn) as client:
         checker = PopularityChecker(client=client, min_stars=args.stars)
         queries = (l.rstrip("\n") for l in sys.stdin)
         tasks = []

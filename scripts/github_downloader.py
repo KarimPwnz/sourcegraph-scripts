@@ -2,9 +2,9 @@ import argparse
 import asyncio
 import logging
 import sys
+import aiohttp
 
 from aiopath import AsyncPath
-from utils import create_client, setup_logging
 
 
 class NotFoundException(Exception):
@@ -21,8 +21,7 @@ class GitHubDownloader:
 
     async def download(self, url):
         async with self._client.get(url) as resp:
-            if resp.status == 404:
-                raise NotFoundException
+            resp.raise_for_status()
             return await resp.text()
 
     async def save(self, url, content):
@@ -30,12 +29,16 @@ class GitHubDownloader:
         await path.parent.mkdir(parents=True, exist_ok=True)
         await path.write_text(content)
 
-    async def download_and_save(self, url):
+    async def download_and_save(self, url, retry_sleep=30):
         logging.info("Downloading %s", url)
         try:
             content = await self.download(url)
-        except NotFoundException:
-            logging.warning("File not found: %s", url)
+        except aiohttp.ClientResponseError as e:
+            if e.status == 429:
+                logging.warning("Retrying in %s seconds (got 429-ed): %s", retry_sleep, url)
+                await asyncio.sleep(retry_sleep)
+                return await self.download_and_save(url, retry_sleep * 2)
+            logging.error("Status code %s != 200 received: %s", e.status, url)
             return
         except Exception as e:
             logging.exception("Exception occurred while downloading: %s", str(e))
@@ -48,7 +51,7 @@ class GitHubDownloader:
 
 
 async def main():
-    setup_logging()
+    logging.basicConfig(format="[%(levelname)s] %(message)s", level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-o", "--output", help="Output file path (default: 'out')", default="out"
@@ -61,15 +64,14 @@ async def main():
         type=int,
     )
     args = parser.parse_args()
-    async with create_client(request_limit=args.limit) as client:
+    conn = aiohttp.TCPConnector(limit=args.limit)
+    async with aiohttp.ClientSession(connector=conn) as client:
         downloader = GitHubDownloader(client=client, output_path=args.output)
-        i = 0
         tasks = []
         urls = (l.rstrip("\n") for l in sys.stdin)
         for url in urls:
-            i += 1
             tasks.append(downloader.download_and_save(url))
-            if i % args.limit == 0:
+            if len(tasks) == args.limit:
                 await asyncio.gather(*tasks)
                 tasks = []
         await asyncio.gather(*tasks)
