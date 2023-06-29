@@ -11,7 +11,7 @@ def setup_logging():
 def create_client(request_limit, *args, **kwargs):
     return RetryClient(
         raise_for_status=False,
-        retry_options=FibonacciRetry(attempts=5, statuses=[429, 500, 502, 503, 504]),
+        retry_options=FibonacciRetry(attempts=float("inf"), statuses=[429, 500, 502, 503, 504], max_timeout=float("inf")),
         connector=TCPConnector(limit=request_limit),
         *args,
         **kwargs
