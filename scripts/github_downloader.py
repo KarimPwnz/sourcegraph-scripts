@@ -7,6 +7,9 @@ from aiopath import AsyncPath
 from utils import create_client, setup_logging
 
 
+class NotFoundException(Exception):
+    pass
+
 class GitHubDownloader:
     def __init__(self, client, output_path):
         self._client = client
@@ -18,6 +21,8 @@ class GitHubDownloader:
 
     async def download(self, url):
         async with self._client.get(url) as resp:
+            if resp.status == 404:
+                raise NotFoundException
             return await resp.text()
 
     async def save(self, url, content):
@@ -29,6 +34,9 @@ class GitHubDownloader:
         logging.info("Downloading %s", url)
         try:
             content = await self.download(url)
+        except NotFoundException:
+            logging.warning("File not found: %s", url)
+            return
         except Exception as e:
             logging.exception("Exception occurred while downloading: %s", str(e))
             return
