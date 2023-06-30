@@ -6,8 +6,6 @@ import aiohttp
 
 from aiopath import AsyncPath
 
-class NotFoundException(Exception):
-    pass
 
 class GitHubDownloader:
     def __init__(self, client, output_path, proxy):
